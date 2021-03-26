@@ -3,12 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shopi_attendant/pages/LoginPage.dart';
 import 'package:provider/provider.dart';
 import 'package:shopi_attendant/models/user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(
   MultiProvider(providers: [
-    ChangeNotifierProvider(create: (_)=>User(email: '',phone: '',location: '',date: '',
-                           type: '',))
+    ChangeNotifierProvider(create: (_)=>User(id:0,name:'',email: '',phone: '',company_id: ''))
   ],
   child: MyApp(),));
 }

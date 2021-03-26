@@ -16,22 +16,29 @@ class OrderRepository{
   }
 
   Future<List<Orders>> fetchOrdersById(String employee_id,String status) async{
-    http.Response response=await http.post(
-        url_fetch_orders,
-        headers: {"Accept":"application/json"},
-        body:{
-          "employee_id":employee_id,
-          "status":status
-        }
-    );
+    try{
+      http.Response response=await http.post(
+          url_fetch_orders,
+          headers: {"Accept":"application/json"},
+          body:{
+            "employee_id":employee_id,
+            "status":status
+          }
+      );
 
-    var jsonOrders=jsonDecode(response.body);
-    print(jsonOrders);
-    var ordersMap=jsonOrders["orders"] as List;
-    List<Orders> order_list=ordersMap.map<Orders>((x) => Orders.fromJson(x)).toList();
-    print("The first item is " + order_list.first.order_date);
+      var jsonOrders=jsonDecode(response.body);
+      print(jsonOrders);
+      var ordersMap=jsonOrders["orders"] as List;
+      List<Orders> order_list=ordersMap.map<Orders>((x) => Orders.fromJson(x)).toList();
+      print("The first item is " + order_list.first.order_date);
 
-    return order_list;
+      return order_list;
+    }
+
+    catch(e,stacktrace){
+      print(stacktrace);
+      return null;
+    }
   }
 
   Future<String> updateService(String status,String id) async{

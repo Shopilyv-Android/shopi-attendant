@@ -5,7 +5,7 @@ import "package:shopi_attendant/models/user.dart";
 
 
 class UserRepository{
-  final String url_fetch_user="https://shopilyv.com/shopiservice/login.php";
+  final String url_fetch_user="https://shopilyv.com/shopiservice/login_employee.php";
 
   UserRepository(){
 

@@ -5,12 +5,14 @@ import "package:shopi_attendant/services/order_repository.dart";
 import "package:shopi_attendant/models/orders.dart";
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shopi_attendant/widgets/SalesSummary.dart';
+import 'package:shopi_attendant/models/user.dart';
 
 class Dashboard extends StatefulWidget{
-  Dashboard({Key key}):super(key:key);
+  Dashboard({Key key,@required this.user}):super(key:key);
+  User user;
 
   @override
-  DashboardState createState()=> DashboardState();
+  DashboardState createState()=> DashboardState(user);
 }
 
 class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixin{
@@ -19,15 +21,18 @@ class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixi
   OrderRepository orderRepository=new OrderRepository();
   Future<List<Orders>> future_orders;
   Future<String> future_update_service;
+  User user;
+  DashboardState(this.user);
 
   @override
   void initState() {
-    future_orders=this.getOrdersById('20','0');
+    future_orders=this.getOrdersById(user.id.toString(),'0');
     super.initState();
     tabController=new TabController(length: 3,vsync: this);
   }
   @override
   Widget build(BuildContext context) {
+     print("User id is " + widget.user.id.toString());
     // TODO: implement build
     return Scaffold(
       key: scaffoldKey,
@@ -80,7 +85,7 @@ class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixi
                                 padding: EdgeInsets.symmetric(vertical: 10.0),
                                 child: Container(
                                   width: MediaQuery.of(context).size.width,
-                                  height: MediaQuery.of(context).size.height * 1/6,
+                                  height: MediaQuery.of(context).size.height * 1/5,
                                   //       color: Colors.black,
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
@@ -147,8 +152,79 @@ class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixi
                                                   side: BorderSide(color: Theme.of(context).primaryColor)
                                               ),
                                             ),
+                                            /*ElevatedButton(onPressed:(){
+                                              completeOrders("1", user_orders.elementAt(index).order_id).then((value){
+                                                print("The value is " + value);
+                                                if(value.contains("OK")){
+                                                  Fluttertoast.showToast(
+                                                      msg: "Order Completed successfully",
+                                                      toastLength: Toast.LENGTH_SHORT,
+                                                      gravity: ToastGravity.CENTER,
+                                                      timeInSecForIosWeb: 1,
+                                                      backgroundColor: Colors.black,
+                                                      textColor: Theme.of(context).primaryColor,
+                                                      fontSize: 16.0
+                                                  );
+                                                  setState(() {
+                                                    future_orders=this.getOrdersById(user.id.toString(),'0');
+                                                  });
+                                                  // Navigator.pop(context);
+                                                }
 
-                                            ElevatedButton(onPressed:(){},
+                                                else if(value.contains("FAILED")){
+                                                  Fluttertoast.showToast(
+                                                      msg: "Error:Could not save order",
+                                                      toastLength: Toast.LENGTH_SHORT,
+                                                      gravity: ToastGravity.CENTER,
+                                                      timeInSecForIosWeb: 1,
+                                                      backgroundColor: Colors.black,
+                                                      textColor: Colors.red,
+                                                      fontSize: 16.0
+                                                  );
+
+                                                }
+                                              });
+                                            },
+                                              child: Text("Start",style: TextStyle(color: Theme.of(context).primaryColor),),
+                                              style: ElevatedButton.styleFrom(
+                                                  primary: Colors.yellowAccent,
+                                                  onSurface: Colors.white
+                                              ),
+                                            ),*/
+
+                                            ElevatedButton(onPressed:(){
+                                              completeOrders("1", user_orders.elementAt(index).order_id).then((value){
+                                                print("The value is " + value);
+                                                if(value.contains("OK")){
+                                                  Fluttertoast.showToast(
+                                                      msg: "Order Completed successfully",
+                                                      toastLength: Toast.LENGTH_SHORT,
+                                                      gravity: ToastGravity.CENTER,
+                                                      timeInSecForIosWeb: 1,
+                                                      backgroundColor: Colors.black,
+                                                      textColor: Theme.of(context).primaryColor,
+                                                      fontSize: 16.0
+                                                  );
+                                                  setState(() {
+                                                    future_orders=this.getOrdersById(user.id.toString(),'0');
+                                                  });
+                                                 // Navigator.pop(context);
+                                                }
+
+                                                else if(value.contains("FAILED")){
+                                                  Fluttertoast.showToast(
+                                                      msg: "Error:Could not save order",
+                                                      toastLength: Toast.LENGTH_SHORT,
+                                                      gravity: ToastGravity.CENTER,
+                                                      timeInSecForIosWeb: 1,
+                                                      backgroundColor: Colors.black,
+                                                      textColor: Colors.red,
+                                                      fontSize: 16.0
+                                                  );
+
+                                                }
+                                              });
+                                            },
                                               child: Text("Complete All",style: TextStyle(color: Colors.white),),
                                               style: ElevatedButton.styleFrom(
                                                   primary: Theme.of(context).primaryColor,
@@ -194,6 +270,10 @@ class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixi
                         );
                       }
 
+                      else if(snapshot.connectionState==ConnectionState.done && snapshot.data==null){
+                        return Container();
+                      }
+
                       else{
                         return Center(
                           child: CircularProgressIndicator(
@@ -212,13 +292,13 @@ class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixi
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
             color: Colors.grey.shade100,
-            child: SalesSummary(),
+            child: SalesSummary(user: user,),
           ),
           Container(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
             color: Colors.grey.shade100,
-            child: Commissions(),
+            child: Commissions(user: user,),
           ),
 
         ],
@@ -406,7 +486,7 @@ class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixi
                                              fontSize: 16.0
                                          );
                                          setState(() {
-                                           future_orders=this.getOrdersById('19','0');
+                                           future_orders=this.getOrdersById(user.id.toString(),'0');
                                          });
                                          Navigator.pop(context);
                                        }

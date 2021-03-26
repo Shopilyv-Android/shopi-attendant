@@ -6,39 +6,26 @@ class User with ChangeNotifier{
   String name;
   String email;
   String phone;
-  String location;
-  String date;
-  String lat;
-  String lng;
-  String type;
-  int shop;
+  String company_id;
 
-  User({this.id,this.name,this.email,this.phone,this.location,this.date,this.lat,this.lng,this.type,this.shop});
+  User({this.id,this.name,this.email,this.phone,this.company_id});
 
   Map<String,dynamic> toJson()=>{
     'name':this.name,
     'email':this.email,
     'phone':this.phone,
-    'location':this.location,
-    'date':this.date,
-    'lat':this.lat,
-    'lng':this.lng,
-    'type':this.type,
-    'shop':this.shop
+    'company_id':this.company_id
+
   };
 
   factory User.fromJson(Map<String,dynamic> parsedJson){
     return User(
-  //    id: int.parse(parsedJson['id']),
+      id: int.parse(parsedJson['id']),
       name: parsedJson['name'],
       email: parsedJson['email'],
       phone: parsedJson['phone'],
-      location: parsedJson['location'],
-      date:parsedJson['date'],
-      lat: parsedJson['lat'],
-      lng:parsedJson['lng'],
-      type: parsedJson['type'],
-  //    shop: int.parse(parsedJson['shop'])
+      company_id: parsedJson['company_id']
+
     );
   }
 }

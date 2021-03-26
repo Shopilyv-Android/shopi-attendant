@@ -8,8 +8,12 @@ class Orders{
   String time;
   String employee_name;
   double amount;
+  int is_started=0;
+  String start_date;
+  String end_date;
 
-  Orders({this.order_id,this.order_date,this.jobs,this.status,this.employee_name,this.time,this.amount});
+  Orders({this.order_id,this.order_date,this.jobs,this.status,this.employee_name,this.time,this.amount,
+  this.is_started,this.start_date,this.end_date});
 
   Map<String,dynamic> toJson()=>{
     'order':this.order_id,
@@ -18,7 +22,10 @@ class Orders{
     'time':this.time,
     'amount':this.amount.toString(),
     'status':this.status,
-    'jobs':List<dynamic>.from(jobs.map((x)=>x.toJson()))
+    'jobs':List<dynamic>.from(jobs.map((x)=>x.toJson())),
+    'is_started':this.is_started.toString(),
+    'start_date':this.start_date,
+    'end_date':this.end_date
   };
 
   factory Orders.fromJson(Map<String,dynamic> parsedJson){
@@ -37,7 +44,10 @@ class Orders{
       status: parsedJson['status'],
       time: parsedJson['time'],
       amount: double.parse(parsedJson['amount']),
-      jobs: user_services
+      jobs: user_services,
+      is_started: int.parse(parsedJson['is_started']),
+      start_date: parsedJson['start_date'],
+      end_date: parsedJson['end_date']
     );
   }
 

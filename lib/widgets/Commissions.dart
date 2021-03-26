@@ -4,12 +4,14 @@ import 'package:shopi_attendant/models/services.dart';
 import 'dart:math';
 import 'package:shopi_attendant/services/order_repository.dart';
 import 'package:shopi_attendant/models/orders.dart';
+import 'package:shopi_attendant/models/user.dart';
 
 class Commissions extends StatefulWidget{
-  Commissions({Key key}):super(key:key);
+  Commissions({Key key,@required this.user}):super(key:key);
+  User user;
 
   @override
-  CommissionState createState()=> CommissionState();
+  CommissionState createState()=> CommissionState(this.user);
 }
 
 class CommissionState extends State<Commissions>  with TickerProviderStateMixin {
@@ -20,15 +22,18 @@ class CommissionState extends State<Commissions>  with TickerProviderStateMixin 
   OrderRepository orderRepository=new OrderRepository();
   Future<String> future_sales,future_served,future_orders_completed;
   Future<List<Orders>> future_total_commissions;
+  User user;
+
+  CommissionState(this.user);
 
   @override
   void initState() {
-    future_sales=this.getSalesById("19", "1");
-    future_served=this.getServedById("19", "1");
-    future_orders_completed=this.getOrdersCompleted("19","1");
-    future_total_commissions=this.getOrdersById("19", "1");
+    future_sales=this.getSalesById(user.id.toString(), "1");
+    future_served=this.getServedById(user.id.toString(), "1");
+    future_orders_completed=this.getOrdersCompleted(user.id.toString(),"1");
+    future_total_commissions=this.getOrdersById(user.id.toString(), "1");
     super.initState();
-    arrow_animation_controller=AnimationController(vsync: this,duration: Duration(milliseconds: 300));
+    arrow_animation_controller=AnimationController(vsync: this,duration: Duration(milliseconds: 500));
     arrow_animation=Tween(begin: 0.0,end:pi).animate(arrow_animation_controller);
     arrow_animation_controller.addStatusListener((status) {
       if(status==AnimationStatus.forward){
@@ -47,245 +52,248 @@ class CommissionState extends State<Commissions>  with TickerProviderStateMixin 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return FutureBuilder(
-    //,future_total_commissions
+    return  FutureBuilder(
+      //,future_total_commissions
         future: Future.wait([future_sales,future_served,future_orders_completed,future_total_commissions]),
         builder: (context,AsyncSnapshot<List<dynamic>> snapshot){
-      if(snapshot.connectionState==ConnectionState.done && snapshot.hasData){
-        String sales_total=snapshot.data[0];
-        String customers_served=snapshot.data[1];
-        String orders_completed=snapshot.data[2];
-        List<Orders> user_orders=snapshot.data[3];
-        double user_total_commissions=calculateCommissions(user_orders);
-        return Padding(
-          padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 20.0),
-          child: Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 20.0,horizontal: 10.0),
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 500),
-                  curve: Curves.bounceInOut,
-                  width: MediaQuery.of(context).size.width,
-                  height: commission_expanded ?
-                  MediaQuery.of(context).size.height * 3/4 :
-                  MediaQuery.of(context).size.height * 1/5,
-                  //  color: Colors.white,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15.0),
-                      boxShadow: [
-                        BoxShadow(
-                            offset: const Offset(1.0,1.0),
-                            blurRadius: 1.0,
-                            spreadRadius: 1.0,
-                            color: Colors.black12
-                        )
-                      ]
-                  ),
+          if(snapshot.connectionState==ConnectionState.done && snapshot.hasData && snapshot.data[3]!=null){
+            String sales_total=snapshot.data[0];
+            String customers_served=snapshot.data[1];
+            String orders_completed=snapshot.data[2];
+            List<Orders> user_orders=snapshot.data[3];
+            double user_total_commissions=calculateCommissions(user_orders);
+            return Padding(
+              padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 20.0),
+              child: Container(
+                width:MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                child: SingleChildScrollView(
                   child: Column(
-                    //  crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Padding(
-                        padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 10.0),
-                        child: Row(
-                          children: [
-
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 50.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          //     mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.monetization_on,color:Theme.of(context).primaryColor,size: 60,),
-                            Padding(
-                                padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("Ksh " + user_total_commissions.toString(),style: TextStyle(color: Colors.black,fontWeight: FontWeight.w600,fontSize: 24),),
-                                    Text("Commmissions",style: TextStyle(color: Colors.black54,fontSize: 12),)
-                                  ],
+                        padding: EdgeInsets.symmetric(vertical: 20.0,horizontal: 10.0),
+                        child: AnimatedContainer(
+                          duration: Duration(milliseconds: 500),
+                          curve: Curves.bounceInOut,
+                          width: MediaQuery.of(context).size.width,
+                          height: commission_expanded ?
+                          MediaQuery.of(context).size.height * 3/4 :
+                          MediaQuery.of(context).size.height * 1/3,
+                          //  color: Colors.white,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15.0),
+                              boxShadow: [
+                                BoxShadow(
+                                    offset: const Offset(1.0,1.0),
+                                    blurRadius: 1.0,
+                                    spreadRadius: 1.0,
+                                    color: Colors.black12
                                 )
-                            )
-                          ],
-                        ),
-                      ),
-                      Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 20.0),
-                            child: Column(
-                              children: [
-                                Divider(),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 5.0,horizontal: 10.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Padding(padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                        child: Column(
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                              child: Text("Ksh " + sales_total,style: TextStyle(color: Theme.of(context).primaryColor),),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                              child: Text("Sales",style: TextStyle(color: Colors.black54,fontSize: 12),),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                      Padding(padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                        child: Column(
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                              child: Text(customers_served,style: TextStyle(color: Colors.amber),),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                              child: Text("Customers Served",style: TextStyle(color: Colors.black54,
-                                                  fontSize: 12),),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                      Padding(padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                        child: Column(
-                                          children: [
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                              child: Text(orders_completed + "%",style: TextStyle(color:Colors.greenAccent),),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                              child: Text("Orders Completed",style: TextStyle(color: Colors.black54,
-                                                  fontSize: 12),),
-                                            )
-                                          ],
-                                        ),
-                                      )
-                                    ],
-                                  ),
+                              ]
+                          ),
+                          child: Column(
+                            //  crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 10.0),
+                                child: Row(
+                                  children: [
+
+                                  ],
                                 ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                  child: Container(
-                                    //     duration: Duration(milliseconds: 500),
-                                    width: MediaQuery.of(context).size.width,
-                                    height: commission_expanded ?  MediaQuery.of(context).size.height * .5 : 0,
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(left: 50.0),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  //     mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.monetization_on,color:Theme.of(context).primaryColor,size: 60,),
+                                    Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text("Ksh " + user_total_commissions.toString(),style: TextStyle(color: Colors.black,fontWeight: FontWeight.w600,fontSize: 24),),
+                                            Text("Commmissions",style: TextStyle(color: Colors.black54,fontSize: 12),)
+                                          ],
+                                        )
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 20.0),
                                     child: Column(
                                       children: [
+                                        Divider(),
                                         Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 10.0,horizontal: 0.0),
+                                          padding: EdgeInsets.symmetric(vertical: 5.0,horizontal: 10.0),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Padding(padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                child: Column(
+                                                  children: [
+                                                    Padding(
+                                                      padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                      child: Text("Ksh " + sales_total,style: TextStyle(color: Theme.of(context).primaryColor),),
+                                                    ),
+                                                    Padding(
+                                                      padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                      child: Text("Sales",style: TextStyle(color: Colors.black54,fontSize: 12),),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              Padding(padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                child: Column(
+                                                  children: [
+                                                    Padding(
+                                                      padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                      child: Text(customers_served,style: TextStyle(color: Colors.amber),),
+                                                    ),
+                                                    Padding(
+                                                      padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                      child: Text("Customers Served",style: TextStyle(color: Colors.black54,
+                                                          fontSize: 12),),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              Padding(padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                child: Column(
+                                                  children: [
+                                                    Padding(
+                                                      padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                      child: Text((double.parse(orders_completed)).toInt().toString() + "%",style: TextStyle(color:Colors.greenAccent),),
+                                                    ),
+                                                    Padding(
+                                                      padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                      child: Text("Orders Completed",style: TextStyle(color: Colors.black54,
+                                                          fontSize: 12),),
+                                                    )
+                                                  ],
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
                                           child: Container(
+                                            //     duration: Duration(milliseconds: 500),
                                             width: MediaQuery.of(context).size.width,
-                                            height: MediaQuery.of(context).size.height * 2/5,
-                                            child: ListView.builder(
-                                              itemCount: user_orders.length,
-                                              itemBuilder: (context,index){
-                                                return Container(
-                                                  width: MediaQuery.of(context).size.width,
-                                                  height: MediaQuery.of(context).size.height * 1/10,
-                                                  child: Column(
-                                                    mainAxisAlignment: MainAxisAlignment.start,
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Padding(
-                                                          padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                                          child: Row(
-                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            height: commission_expanded ?  MediaQuery.of(context).size.height * .5 : 0,
+                                            child: Column(
+                                              children: [
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(vertical: 10.0,horizontal: 0.0),
+                                                  child: Container(
+                                                    width: MediaQuery.of(context).size.width,
+                                                    height: MediaQuery.of(context).size.height * 2/5,
+                                                    child: ListView.builder(
+                                                      itemCount: user_orders.length,
+                                                      itemBuilder: (context,index){
+                                                        return Container(
+                                                          width: MediaQuery.of(context).size.width,
+                                                          height: MediaQuery.of(context).size.height * 1/8,
+                                                          child: Column(
+                                                            mainAxisAlignment: MainAxisAlignment.start,
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
                                                             children: [
-                                                              Text(user_orders.elementAt(index).order_id,style: TextStyle(color: Colors.black87,fontWeight: FontWeight.w600,
-                                                                  fontSize: 15),),
-                                                              Text("21/02/2021",style: TextStyle(color: Colors.black54,fontSize: 13,
-                                                              ),)
-                                                            ],
-                                                          )
-                                                      ),
-                                                      Padding(
-                                                        padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                                        child: Text("Average time: 30 minutes",style: TextStyle(color: Colors.black54,
-                                                            fontSize: 13),),
-                                                      ),
-                                                      Padding(
-                                                        padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                                        child: Text("Commission: Ksh 200",style: TextStyle(color: Colors.black54,fontSize: 13),),
-                                                      ),
-                                                      Padding(
-                                                        padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                                        child: Row(
-                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                          children: [
-                                                            Padding(
-                                                              padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                                              child: Row(
-                                                                children: [
-                                                                  Text("Status:",style: TextStyle(color: Colors.black54,fontSize: 13),),
-                                                                  Text("Completed",style: TextStyle(color: Theme.of(context).primaryColor,
-                                                                      fontSize: 13),)
-                                                                ],
+                                                              Padding(
+                                                                  padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                                  child: Row(
+                                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                    children: [
+                                                                      Text(user_orders.elementAt(index).order_id,style: TextStyle(color: Colors.black87,fontWeight: FontWeight.w600,
+                                                                          fontSize: 15),),
+                                                                      Text(user_orders.elementAt(index).order_date.substring(0,10),style: TextStyle(color: Colors.black54,fontSize: 13,
+                                                                      ),)
+                                                                    ],
+                                                                  )
                                                               ),
-                                                            ),
+                                                              Padding(
+                                                                padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                                child: Text("Average time: 30 minutes",style: TextStyle(color: Colors.black54,
+                                                                    fontSize: 13),),
+                                                              ),
+                                                              Padding(
+                                                                padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                                child: Text("Commission: Ksh " + calculateCommisionPerOrder(
+                                                                    user_orders.elementAt(index)
+                                                                ).toString() ,style: TextStyle(color: Colors.black54,fontSize: 13),),
+                                                              ),
+                                                              Padding(
+                                                                padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                                child: Text("Time: " + user_orders.elementAt(index).order_date.substring(11,19) ,style: TextStyle(color: Colors.black54,fontSize: 13),),
+                                                              ),
+                                                              Padding(
+                                                                padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                                child: Row(
+                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                  children: [
+                                                                    Padding(
+                                                                      padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                                      child: Row(
+                                                                        children: [
+                                                                          Text("Status:",style: TextStyle(color: Colors.black54,fontSize: 13),),
+                                                                          Text("Completed",style: TextStyle(color: Theme.of(context).primaryColor,
+                                                                              fontSize: 13),)
+                                                                        ],
+                                                                      ),
+                                                                    ),
 
-                                                            Padding(
-                                                              padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                                              child: Icon(Icons.check_circle_outline,color: Theme.of(context).primaryColor,),
-                                                            )
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      Divider()
-                                                    ],
+                                                                    Padding(
+                                                                      padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
+                                                                      child: Icon(Icons.check_circle_outline,color: Theme.of(context).primaryColor,),
+                                                                    )
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              Divider()
+                                                            ],
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
                                                   ),
-                                                );
-                                              },
+                                                ),
+
+                                              ],
                                             ),
                                           ),
                                         ),
-                                        /* Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                    child: Row(
-                                      children: [
-                                        Text("Total:Ksh 24000",style: TextStyle(color: Theme.of(context).primaryColor,fontSize: 16),)
+                                        Padding(
+                                            padding: EdgeInsets.symmetric(vertical: 10.0,horizontal: 0.0),
+                                            child: AnimatedBuilder(
+                                                animation: arrow_animation_controller,
+                                                builder: (context,child)=>Transform.rotate(
+                                                  angle: arrow_animation.value,
+                                                  child:IconButton(icon: Icon(Icons.keyboard_arrow_down_sharp,size: 40,),
+                                                    onPressed: (){
+                                                      arrow_animation_controller.isCompleted ?
+                                                      arrow_animation_controller.reverse() :
+                                                      arrow_animation_controller.forward();
+                                                    },),
+                                                )
+                                            )
+                                        ),
                                       ],
                                     ),
-                                  )*/
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 0.0),
-                                    child: AnimatedBuilder(
-                                        animation: arrow_animation_controller,
-                                        builder: (context,child)=>Transform.rotate(
-                                          angle: arrow_animation.value,
-                                          child:IconButton(icon: Icon(Icons.keyboard_arrow_down_sharp,size: 40,),
-                                            onPressed: (){
-                                              arrow_animation_controller.isCompleted ?
-                                              arrow_animation_controller.reverse() :
-                                              arrow_animation_controller.forward();
-                                            },),
-                                        )
-                                    )
-                                ),
-                              ],
-                            ),
-                          )
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            /* Padding(
+                                  )
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                      /* Padding(
                   padding: EdgeInsets.symmetric(vertical: 20.0,horizontal: 10.0),
                   child: AnimatedContainer(
                     duration: Duration(milliseconds: 500),
@@ -510,35 +518,40 @@ class CommissionState extends State<Commissions>  with TickerProviderStateMixin 
                   ),
                 )*/
 
-            ],
-          ),
-        );
-      }
+                    ],
+                  ),
+                )
+              )
+            );
+          }
 
-      else if(snapshot.hasError){
-        return Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-          ),
-        );
-      }
+          else if(snapshot.hasError){
+            return Center(
+                child: Text('Error loading data')
+            );
 
-      else if(snapshot.connectionState==ConnectionState.waiting){
-        return Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-          ),
-        );
-      }
+          }
 
-      else{
-        return Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-          ),
-        );
-      }
-    });
+          else if(snapshot.connectionState==ConnectionState.done && snapshot.data[3]==null){
+            return Container();
+          }
+
+          else if(snapshot.connectionState==ConnectionState.waiting){
+            return Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+              ),
+            );
+          }
+
+          else{
+            return Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+              ),
+            );
+          }
+        });
   }
 
   Future<String> getSalesById(String employee_id,String status) async{
@@ -573,5 +586,13 @@ class CommissionState extends State<Commissions>  with TickerProviderStateMixin 
     });
 
     return order_commission;
+  }
+  double calculateCommisionPerOrder(Orders order){
+    double final_commission=0.0;
+    order.jobs.forEach((element) {
+      final_commission=final_commission + element.pay;
+    });
+
+    return final_commission;
   }
 }

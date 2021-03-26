@@ -161,7 +161,7 @@ class LoginPageState extends State<LoginPage>{
                                     width: MediaQuery.of(context).size.width,
                                     height: 40,
                                     child: TextButton(onPressed:(){
-                                      // Navigator.push(context,MaterialPageRoute(builder: (context)=>Dashboard()));
+                                     //  Navigator.push(context,MaterialPageRoute(builder: (context)=>Dashboard()));
                                       if(_regissterFormKey.currentState.validate()){
                                         setState(() {
                                           loading_status=true;
@@ -174,7 +174,7 @@ class LoginPageState extends State<LoginPage>{
                                           if(value!=null){
                                             error_message='';
                                             loading_status=false;
-                                            Navigator.push(context,MaterialPageRoute(builder: (context)=>Dashboard()));
+                                            Navigator.push(context,MaterialPageRoute(builder: (context)=>Dashboard(user: value,)));
                                           }
                                           else{
                                             setState(() {
@@ -217,7 +217,7 @@ class LoginPageState extends State<LoginPage>{
                     padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 20.0),
                     child:  Container(
                       width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height * 1/4,
+                      height: MediaQuery.of(context).size.height * 1/6,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(15.0),

@@ -2,21 +2,27 @@ import 'package:flutter/cupertino.dart';
 import "package:flutter/material.dart";
 import "package:shopi_attendant/services/order_repository.dart";
 import "package:shopi_attendant/models/orders.dart";
+import 'package:shopi_attendant/models/user.dart';
 
 class SalesSummary extends StatefulWidget{
-  SalesSummary({Key key}):super(key:key);
+  SalesSummary({Key key,@required this.user}):super(key:key);
+  User user;
 
   @override
-  SalesSummaryState createState()=> SalesSummaryState();
+  SalesSummaryState createState()=> SalesSummaryState(user);
 }
 
 class SalesSummaryState extends State<SalesSummary>{
   Future<List<Orders>> future_orders;
   OrderRepository orderRepository=new OrderRepository();
+  User user;
+
+  SalesSummaryState(this.user);
+
 
   @override
   void initState() {
-    future_orders=this.getOrdersById('19', '1');
+    future_orders=this.getOrdersById(user.id.toString(), '1');
     super.initState();
   }
   @override
@@ -40,7 +46,7 @@ class SalesSummaryState extends State<SalesSummary>{
                         itemBuilder: (context,index){
                           return Container(
                             width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.height * 1/8,
+                            height: MediaQuery.of(context).size.height * 1/7,
                             //color: Colors.white,
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -115,12 +121,20 @@ class SalesSummaryState extends State<SalesSummary>{
         );
       }
 
+      /*else if(snapshot.hasData==null){
+        return Container();
+      }*/
+
       else if(snapshot.connectionState==ConnectionState.waiting){
         return Center(
           child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
           ),
         );
+      }
+
+      else if(snapshot.connectionState==ConnectionState.done && snapshot.data==null){
+        return Container();
       }
 
       else{
