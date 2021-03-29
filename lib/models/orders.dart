@@ -41,13 +41,14 @@ class Orders{
       order_id: parsedJson['order'],
       order_date: parsedJson['date'],
       employee_name:parsedJson['agent'],
-      status: parsedJson['status'],
+      status: parsedJson['status'].toString(),
       time: parsedJson['time'],
       amount: double.parse(parsedJson['amount']),
+  //    amount:parsedJson['amount'],
       jobs: user_services,
       is_started: int.parse(parsedJson['is_started']),
-      start_date: parsedJson['start_date'],
-      end_date: parsedJson['end_date']
+      start_date: parsedJson['start_time'],
+      end_date: parsedJson['end_time']
     );
   }
 

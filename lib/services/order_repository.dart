@@ -5,11 +5,13 @@ import 'dart:convert';
 
 class OrderRepository{
   final String url_fetch_orders="https://shopilyv.com/shopiservice/fetch_orders_attendant.php";
+  final String url_fetch_orders1="https://shopilyv.com/shopiservice/fetch_orders_attendants.php";
   final String url_update_service="https://shopilyv.com/shopiservice/update_service.php";
   final String url_complete_orders="https://shopilyv.com/shopiservice/completeOrders.php";
   final String url_fetch_sales_by_id="https://shopilyv.com/shopiservice/sales_summary_by_id.php";
   final String url_fetch_served_by_id="https://shopilyv.com/shopiservice/getClientsTotal.php";
   final String url_fetch_count_completed="https://shopilyv.com/shopiservice/countCompletedOrders.php";
+  final String url_start_order="https://shopilyv.com/shopiservice/startOrder.php";
 
   OrderRepository(){
 
@@ -23,6 +25,34 @@ class OrderRepository{
           body:{
             "employee_id":employee_id,
             "status":status
+          }
+      );
+
+      var jsonOrders=jsonDecode(response.body);
+      print(jsonOrders);
+      var ordersMap=jsonOrders["orders"] as List;
+      List<Orders> order_list=ordersMap.map<Orders>((x) => Orders.fromJson(x)).toList();
+      print("The first item is " + order_list.first.order_date);
+
+      return order_list;
+    }
+
+    catch(e,stacktrace){
+      print(stacktrace);
+      return null;
+    }
+  }
+
+  Future<List<Orders>> fetchOrdersById1(String employee_id,String status,String status1) async{
+
+    try{
+      http.Response response=await http.post(
+          url_fetch_orders1,
+          headers: {"Accept":"application/json"},
+          body:{
+            "employee_id":employee_id,
+            "status":status,
+            "status1":status
           }
       );
 
@@ -96,6 +126,22 @@ class OrderRepository{
     var result=response.body;
     String userResponse=result.toString();
     return userResponse;
+  }
+
+  Future<String> startOrder(int is_started,String bill_no,String status) async{
+   try{
+     http.Response response=await http.post(url_start_order,
+         headers: {"Accept":"application/json"},
+         body: {"is_started":is_started.toString(),"bill_no":bill_no,"status":status}
+     );
+     var result=response.body;
+     String userResponse=result.toString();
+     return userResponse;
+   }
+   catch(ex,stacktrace){
+     print(stacktrace);
+     return 'NETWORK ERROR';
+   }
   }
 
 }

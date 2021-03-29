@@ -26,7 +26,7 @@ class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixi
 
   @override
   void initState() {
-    future_orders=this.getOrdersById(user.id.toString(),'0');
+    future_orders=this.getOrdersById1(user.id.toString(),'0','6');
     super.initState();
     tabController=new TabController(length: 3,vsync: this);
   }
@@ -83,9 +83,13 @@ class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixi
                             itemBuilder: (context,index){
                               return Padding(
                                 padding: EdgeInsets.symmetric(vertical: 10.0),
-                                child: Container(
+                                child: AnimatedContainer(
+                                  duration: Duration(milliseconds: 500),
                                   width: MediaQuery.of(context).size.width,
-                                  height: MediaQuery.of(context).size.height * 1/5,
+                                  height: user_orders.elementAt(index).is_started==0 ?
+                                  MediaQuery.of(context).size.height * 1/5 :
+                                  MediaQuery.of(context).size.height * 2/5
+                                  ,
                                   //       color: Colors.black,
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
@@ -132,8 +136,40 @@ class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixi
                                        Padding(
                                          padding: EdgeInsets.symmetric(horizontal: 20.0),
                                          child: Text("Status:Not Completed",style: TextStyle(color: Colors.red),),
-                                       ) : Container()
-                                      ,
+                                       ) :
+                                       user_orders.elementAt(index).status=='6' ?
+                                        Padding(
+                                          padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 20.0),
+                                          child: Text("Started",style: TextStyle(color: Theme.of(context).primaryColor),),
+                                        )
+                                           :
+                                       Container(),
+                                      /*user_orders.elementAt(index).is_started > 0 ?
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 0.0,horizontal: 20.0
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 0.0,
+                                                    horizontal: 20.0
+                                                  ),
+                                                  child: Text(
+                                                    "Started at "
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: EdgeInsets.symmetric(vertical: 0.0,horizontal: 20.0),
+                                                  child: Text(
+                                                    user_orders.elementAt(index).start_date
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          ):
+                                          Container(),*/
 
                                       Padding(
                                         padding: EdgeInsets.symmetric(horizontal: 20.0),
@@ -152,45 +188,20 @@ class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixi
                                                   side: BorderSide(color: Theme.of(context).primaryColor)
                                               ),
                                             ),
-                                            /*ElevatedButton(onPressed:(){
-                                              completeOrders("1", user_orders.elementAt(index).order_id).then((value){
-                                                print("The value is " + value);
-                                                if(value.contains("OK")){
-                                                  Fluttertoast.showToast(
-                                                      msg: "Order Completed successfully",
-                                                      toastLength: Toast.LENGTH_SHORT,
-                                                      gravity: ToastGravity.CENTER,
-                                                      timeInSecForIosWeb: 1,
-                                                      backgroundColor: Colors.black,
-                                                      textColor: Theme.of(context).primaryColor,
-                                                      fontSize: 16.0
-                                                  );
-                                                  setState(() {
-                                                    future_orders=this.getOrdersById(user.id.toString(),'0');
-                                                  });
-                                                  // Navigator.pop(context);
-                                                }
-
-                                                else if(value.contains("FAILED")){
-                                                  Fluttertoast.showToast(
-                                                      msg: "Error:Could not save order",
-                                                      toastLength: Toast.LENGTH_SHORT,
-                                                      gravity: ToastGravity.CENTER,
-                                                      timeInSecForIosWeb: 1,
-                                                      backgroundColor: Colors.black,
-                                                      textColor: Colors.red,
-                                                      fontSize: 16.0
-                                                  );
-
-                                                }
-                                              });
+                                            user_orders.elementAt(index).is_started > 0 ?
+                                                Container():
+                                            ElevatedButton(onPressed:(){
+                                               setState(() {
+                                                 startOrders(1,user_orders.elementAt(index).order_id,'6');
+                                                 future_orders=this.getOrdersById1(user.id.toString(),'0','6');
+                                               });
                                             },
-                                              child: Text("Start",style: TextStyle(color: Theme.of(context).primaryColor),),
+                                              child: Text("Start " + user_orders.elementAt(index).is_started.toString(),style: TextStyle(color: Theme.of(context).primaryColor),),
                                               style: ElevatedButton.styleFrom(
-                                                  primary: Colors.yellowAccent,
+                                                  primary: Colors.yellow,
                                                   onSurface: Colors.white
                                               ),
-                                            ),*/
+                                            ),
 
                                             ElevatedButton(onPressed:(){
                                               completeOrders("1", user_orders.elementAt(index).order_id).then((value){
@@ -206,7 +217,7 @@ class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixi
                                                       fontSize: 16.0
                                                   );
                                                   setState(() {
-                                                    future_orders=this.getOrdersById(user.id.toString(),'0');
+                                                    future_orders=this.getOrdersById1(user.id.toString(),'0','6');
                                                   });
                                                  // Navigator.pop(context);
                                                 }
@@ -553,9 +564,21 @@ class DashboardState extends State<Dashboard> with SingleTickerProviderStateMixi
     return orders;
   }
 
+  Future<List<Orders>> getOrdersById1(String id,String status,String status1) async{
+    List<Orders> orders=await orderRepository.fetchOrdersById1(id,status,status1);
+    print(orders);
+    return orders;
+  }
+
+
   Future<String> completeOrders(String status,String bill_no) async{
     String order_status=await orderRepository.completeOrder(status, bill_no);
     return order_status;
+  }
+
+  Future<String> startOrders(int is_started,String bill_no,String status) async{
+    String orderStarted=await orderRepository.startOrder(is_started, bill_no,status);
+    return orderStarted;
   }
 
   /*Widget updateStatusWidget(String status,String id){

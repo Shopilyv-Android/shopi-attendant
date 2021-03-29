@@ -74,7 +74,7 @@ class CommissionState extends State<Commissions>  with TickerProviderStateMixin 
                         padding: EdgeInsets.symmetric(vertical: 20.0,horizontal: 10.0),
                         child: AnimatedContainer(
                           duration: Duration(milliseconds: 500),
-                          curve: Curves.bounceInOut,
+                      //    curve: Curves.bounceInOut,
                           width: MediaQuery.of(context).size.width,
                           height: commission_expanded ?
                           MediaQuery.of(context).size.height * 3/4 :
